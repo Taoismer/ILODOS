@@ -1,0 +1,1 @@
+<annotation><filename>COCO_train2014_000000096154.jpg</filename><size><width>640</width><height>427</height><depth>3</depth></size><object><name>airplane</name><difficult>0</difficult><bndbox><xmin>342</xmin><ymin>91</ymin><xmax>492</xmax><ymax>236</ymax></bndbox></object></annotation>

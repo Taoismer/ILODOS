@@ -1,0 +1,6 @@
+_BASE_: "../Base-RCNN-C4.yaml"
+MODEL:
+  WEIGHTS: "./R-50.pkl"
+  MASK_ON: False
+  RESNETS:
+    DEPTH: 50
