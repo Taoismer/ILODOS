@@ -6,15 +6,6 @@ from fvcore.common.file_io import PathManager
 
 from detectron2.utils.store_non_list import Store
 
-VOC_CLASS_NAMES_COCOFIED = [
-    "airplane",  "dining table", "motorcycle",
-    "potted plant", "couch", "tv"
-]
-
-BASE_VOC_CLASS_NAMES = [
-    "aeroplane", "diningtable", "motorbike",
-    "pottedplant",  "sofa", "tvmonitor"
-]
 
 VOC_CLASS_NAMES = [
     "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
@@ -22,39 +13,35 @@ VOC_CLASS_NAMES = [
     "pottedplant", "sheep", "sofa", "train", "tvmonitor"
 ]
 
-T2_CLASS_NAMES = [
-    "truck", "traffic light", "fire hydrant", "stop sign", "parking meter",
-    "bench", "elephant", "bear", "zebra", "giraffe",
-    "backpack", "umbrella", "handbag", "tie", "suitcase",
-    "microwave", "oven", "toaster", "sink", "refrigerator"
-]
+T2_cate_file = './ImageSets/t2/t2_train_cate_fsod.txt'
+with open(T2_cate_file,'r') as f:
+    cate_list = f.readlines()
+    T2_CLASS_NAMES = [c.strip() for c in cate_list]
+    print('number of class in T2', len(set(T2_CLASS_NAMES)))
 
-T3_CLASS_NAMES = [
-    "frisbee", "skis", "snowboard", "sports ball", "kite",
-    "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket",
-    "banana", "apple", "sandwich", "orange", "broccoli",
-    "carrot", "hot dog", "pizza", "donut", "cake"
-]
+# T3_cate_file = './ImageSets/t3/t3_train_cate_fsod.txt'
+# with open(T3_cate_file,'r') as f:
+#     cate_list = f.readlines()
+#     T3_CLASS_NAMES = [c.strip() for c in cate_list]
+#     print('number of class in T3', len(set(T3_CLASS_NAMES)))
 
-T4_CLASS_NAMES = [
-    "bed", "toilet", "laptop", "mouse",
-    "remote", "keyboard", "cell phone", "book", "clock",
-    "vase", "scissors", "teddy bear", "hair drier", "toothbrush",
-    "wine glass", "cup", "fork", "knife", "spoon", "bowl"
-]
+# T4_cate_file = './ImageSets/t4/t4_train_cate_fsod.txt'
+# with open(T4_cate_file,'r') as f:
+#     cate_list = f.readlines()
+#     T4_CLASS_NAMES = [c.strip() for c in cate_list]
+#     print('number of class in T4', len(set(T4_CLASS_NAMES)))
 
 UNK_CLASS = ["unknown"]
 
 # Change this accodingly for each task t*
-known_classes = list(itertools.chain(VOC_CLASS_NAMES, T2_CLASS_NAMES))
-train_files = ['../VOC2007/ImageSets/Main/t2_train.txt','../VOC2007/ImageSets/Main/t1_train.txt']
+known_classes = VOC_CLASS_NAMES + T2_CLASS_NAMES 
+train_files = ['./ImageSets/t2/t2_train_fsod.txt','../VOC2007/ImageSets/Main/t1_train.txt']
 
 # known_classes = list(itertools.chain(VOC_CLASS_NAMES))
-# train_files = ['/home/fk1/workspace/OWOD/datasets/VOC2007/ImageSets/Main/train.txt']
-annotation_location = '../VOC2007/Annotations'
+annotation_location = '/home/causal_ws/OWOD/datasets/VOC2007/Annotations'
 
 items_per_class = 1
-dest_file = './ImageSets/Main/t2_ft_' + str(items_per_class) + '.txt'
+dest_file = './ImageSets/t2/t2_ft_fsod_' + str(items_per_class) + '.txt'
 
 file_names = []
 for tf in train_files:
@@ -67,6 +54,8 @@ image_store = Store(len(known_classes), items_per_class)
 
 current_min_item_count = 0
 
+_classes = []
+
 for fileid in file_names:
     fileid = fileid.strip()
     anno_file = os.path.join(annotation_location, fileid + ".xml")
@@ -76,15 +65,19 @@ for fileid in file_names:
 
     for obj in tree.findall("object"):
         cls = obj.find("name").text
-        if cls in VOC_CLASS_NAMES_COCOFIED:
-            cls = BASE_VOC_CLASS_NAMES[VOC_CLASS_NAMES_COCOFIED.index(cls)]
+        _classes.append(cls) #to assert
         if cls in known_classes:
             image_store.add((fileid,), (known_classes.index(cls),))
 
+
     current_min_item_count = min([len(items) for items in image_store.retrieve(-1)])
-    print(current_min_item_count)
+    # print(current_min_item_count)
     if current_min_item_count == items_per_class:
         break
+
+for c in known_classes:
+    assert c in _classes, '{} class do not find instance '.format(c)
+
 
 filtered_file_names = []
 for items in image_store.retrieve(-1):

@@ -1,4 +1,6 @@
 datasets/VOC2007
+datasets/coco_utils/ImageSets
+
 R-50.pkl
 Pipfile
 
